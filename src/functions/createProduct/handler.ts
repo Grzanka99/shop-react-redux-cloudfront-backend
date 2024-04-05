@@ -4,6 +4,7 @@ import {
   ValidatedEventAPIGatewayProxyEvent,
 } from "@libs/api-gateway";
 import { dynamoClient, productsTableName } from "@libs/dynamodb";
+import jsonBodyParser from "@middy/http-json-body-parser";
 import { v4 as uuidv4 } from "uuid";
 
 export type TCreateProduct = {
@@ -16,27 +17,27 @@ async function createProduct(
   event: ValidatedEventAPIGatewayProxyEvent<unknown>,
 ) {
   // @ts-expect-error
-  const payload: TCreateProduct = event.body;
+  const payload: TCreateProduct = JSON.parse(event.body.replace(/\n|\t/g, ""));
 
   const id = uuidv4();
 
-  const putCmd = new PutItemCommand({
-    TableName: productsTableName,
-    Item: {
-      id: { S: id },
-      description: { S: payload.description },
-      title: { S: payload.title },
-      price: { N: String(payload.price) },
-    },
-  });
-
   try {
+    const putCmd = new PutItemCommand({
+      TableName: productsTableName,
+      Item: {
+        id: { S: id },
+        description: { S: payload.description },
+        title: { S: payload.title },
+        price: { N: String(payload.price) },
+      },
+    });
+
     await dynamoClient.send(putCmd);
     return formatJSONResponse({
       id,
       ...payload,
     });
-  } catch (_) {
+  } catch (e) {
     return formatJSONResponse({
       message: "Internal server error",
       code: 500,

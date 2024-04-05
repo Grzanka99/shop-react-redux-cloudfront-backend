@@ -20,8 +20,6 @@ async function getProductsList() {
       dynamoClient.send(scanStoctsCommand),
     ]);
 
-    console.log(stocks.Items);
-
     return formatJSONResponse(
       products.Items.map((el) => {
         const stockValue = stocks.Items.find(
@@ -32,7 +30,7 @@ async function getProductsList() {
           price: el.price.N,
           title: el.title.S,
           description: el.description.S,
-          count: stockValue.count.N,
+          count: stockValue ? stockValue.count.N : 0,
         };
       }),
     );
