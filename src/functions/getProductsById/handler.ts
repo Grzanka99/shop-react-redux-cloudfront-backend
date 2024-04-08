@@ -1,19 +1,29 @@
+import { GetItemCommand } from "@aws-sdk/client-dynamodb";
 import {
   formatJSONResponse,
   ValidatedEventAPIGatewayProxyEvent,
 } from "@libs/api-gateway";
-import { middyfy } from "@libs/lambda";
-import { products } from "src/mocks/products";
+import { dynamoClient, productsTableName } from "@libs/dynamodb";
 
 async function getProductsById(
   event: ValidatedEventAPIGatewayProxyEvent<unknown>,
 ) {
-  const product = products.find(
-    (el) => el.id === event.pathParameters.productId,
-  );
+  // @ts-expect-error
+  const productId = event.pathParameters.productId;
+  const getCmd = new GetItemCommand({
+    TableName: productsTableName,
+    Key: { id: { S: productId } },
+  });
 
-  if (product) {
-    return formatJSONResponse(product);
+  const { Item } = await dynamoClient.send(getCmd);
+
+  if (Item) {
+    return formatJSONResponse({
+      id: Item.id.S,
+      description: Item.description.S,
+      price: Item.price.N,
+      title: Item.title.S,
+    });
   }
 
   return formatJSONResponse({
@@ -22,4 +32,4 @@ async function getProductsById(
   });
 }
 
-export const main = middyfy(getProductsById);
+export const main = getProductsById;

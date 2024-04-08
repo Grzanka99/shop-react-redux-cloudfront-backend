@@ -1,4 +1,20 @@
-export const products = [
+import { AttributeValue } from "@aws-sdk/client-dynamodb";
+
+export type TProduct = {
+  id: string;
+  description: string;
+  price: number;
+  title: string;
+};
+
+export type TDBProduct = {
+  id: AttributeValue;
+  description: AttributeValue;
+  price: AttributeValue;
+  title: AttributeValue;
+};
+
+export const products: TProduct[] = [
   {
     description: "Short Product Description1",
     id: "7567ec4b-b10c-48c5-9345-fc73c48a80aa",
@@ -36,3 +52,13 @@ export const products = [
     title: "ProductName",
   },
 ];
+
+export type EStock = {
+  product_id: string;
+  count: number;
+};
+
+export const stocks: EStock[] = products.map((el, i) => ({
+  product_id: el.id,
+  count: i + 1,
+}));
