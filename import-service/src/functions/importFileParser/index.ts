@@ -8,7 +8,7 @@ export default {
       s3: {
         bucket: S3_BUCKET_NAME,
         event: "s3:ObjectCreated:*",
-        rules: [{ prefix: "uploaded/" }, {}],
+        rules: [{ prefix: "uploaded/" }],
       },
     },
   ],
